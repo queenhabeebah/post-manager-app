@@ -8,4 +8,5 @@ export interface Post{
 export interface NewPost{
     title: string
     body: string
+    userId: number
 }

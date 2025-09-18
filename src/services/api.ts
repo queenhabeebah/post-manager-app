@@ -5,7 +5,7 @@ import type { Post, NewPost  } from "../types/Post";
 const BASE_URL = "https://jsonplaceholder.typicode.com/posts";
 
 // Fetch all required posts from the BASE_URL
-export async function fetchPosts(limit:10) : Promise<Post[]> {
+export async function fetchPosts(limit: number = 10) : Promise<Post[]> {
     const res = await axios.get<Post[]>(`${BASE_URL}?_limit=${limit}`)
     return res.data
 }
@@ -23,6 +23,6 @@ return res.data
 }
 
 // Delete a post and remove from other posts
-export async function daletePost(id: number) : Promise<void>{
+export async function deletePost(id: number) : Promise<void>{
     await axios.delete(`${BASE_URL}/${id}`)
 }
