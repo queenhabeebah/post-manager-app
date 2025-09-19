@@ -98,13 +98,16 @@ const Home = () => {
 
   return (
     <div className="container">
+      <header>
+        <span>PostsMan</span>
       {/* Add toggle button for show/hide CreateForm */}
       <button
         className="toggleButton"
         onClick={() => setShowCreateForm((prev) => !prev)}
-      >
+        >
         {showCreateForm ? "Close Form" : "Create a New Post"}
       </button>
+        </header>
 
       {/* Error creating post */}
       {error && <p style={{ color: "red" }}>{error}</p>}
@@ -171,6 +174,7 @@ const Home = () => {
           )}
         </div>
       ))}
+      <footer><p>&copy; {new Date().getFullYear()} My Blog. All rights reserved.</p></footer>
     </div>
   );
 };
