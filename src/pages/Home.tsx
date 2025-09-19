@@ -13,10 +13,10 @@ const Home = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Load posts
+    // Fetch posts from API when component mounts
     const loadPosts = async () => {
       try {
-        const data = await fetchPosts(); //fetchPosts alredy defined in api
+        const data = await fetchPosts();
         setPosts(data);
       } catch (error) {
         setError("Failed to fetch posts"); //Error message when posts refused to load
@@ -40,17 +40,16 @@ const Home = () => {
     setNewPostBody("");
     alert("Post created successfully");
   };
-  
+
   // Add newly created post to the UI
   const handleAddPost = async (newPost: NewPost) => {
     try {
       const created = await createPost(newPost);
-      //Add unique id and to not rely on placeholder's fake id
-      created.id = Date.now() 
+      //Assign unique id sincE placeholder API may return fake id
+      created.id = Date.now();
       setPosts((prev) => [created, ...prev]); // Add new post to thr top
     } catch (error) {}
   };
-
 
   // Edit a post
   const [editPostId, setEditPostId] = useState<number | null>(null);
@@ -66,11 +65,12 @@ const Home = () => {
   const handleSaveEdit = async (id: number) => {
     try {
       const updated: Post = { id, userId: 1, title: editTitle, body: editBody };
+      // Call API to update post, then update local state
       const editedPost = await updatePost(id, updated);
       setPosts((prev) =>
         prev.map((post) => (post.id === id ? editedPost : post))
       );
-      // Reset edit state
+      // After successful update, clear edit form and exit editing mode
       setEditPostId(null);
       setEditTitle("");
       setEditBody("");
@@ -81,18 +81,25 @@ const Home = () => {
 
   // Delete post logic
   const handleDelete = async (id: number) => {
-    if(!window.confirm('Delete this post?')) return
+    if (!window.confirm("Delete this post?")) return;
     try {
       await deletePost(id);
-      setPosts((prev)  => prev.filter((post) => post.id !== id))
-      alert(
-        'Post deleted'
-      )
+      setPosts((prev) => prev.filter((post) => post.id !== id));
+      alert("Post deleted");
     } catch (error) {
       console.error("Failed to delete post");
     }
   };
 
+  // Add a search state for search functionality
+  const [search, setSearch] = useState("");
+
+  // Add filter and change user input to lowercase to search in title and body
+  const filteredPosts = posts.filter(
+    (post) =>
+      post.title.toLowerCase().includes(search.toLowerCase()) ||
+      post.body.toLowerCase().includes(search.toLowerCase())
+  );
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
 
@@ -100,17 +107,26 @@ const Home = () => {
     <div className="container">
       <header>
         <span>PostsMan</span>
-      {/* Add toggle button for show/hide CreateForm */}
-      <button
-        className="toggleButton"
-        onClick={() => setShowCreateForm((prev) => !prev)}
+        {/* Add toggle button for show/hide CreateForm */}
+        <button
+          className="toggleButton"
+          onClick={() => setShowCreateForm((prev) => !prev)}
         >
-        {showCreateForm ? "Close Form" : "Create a New Post"}
-      </button>
-        </header>
+          {showCreateForm ? "Close Form" : "Create a New Post"}
+        </button>
+      </header>
 
       {/* Error creating post */}
       {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {/* Add input to search */}
+      <input className="search"
+        type="text"
+        placeholder="Search posts..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+
 
       {/* Conditional Form for creating a new post */}
       {showCreateForm && (
@@ -121,21 +137,23 @@ const Home = () => {
             onChange={(e) => setNewPostTitle(e.target.value)}
             value={newPostTitle}
             required
-          />
+            />
           <textarea
             placeholder="Post Content"
             value={newPostBody}
             rows={10}
             onChange={(e) => setNewPostBody(e.target.value)}
             required
-          ></textarea>
+            ></textarea>
           <button type="submit">Create Post</button>
         </form>
       )}
 
       {/* Post list */}
       <h1 className="heading">Top Posts</h1>
-      {posts.map((post) => (
+
+      {/* Render filteredPosts instead of posts */}
+      {filteredPosts.map((post) => (
         <div key={post.id} className="postCard">
           {/* Inline Edit Form for editing a post */}
           {editPostId === post.id ? (
@@ -151,15 +169,25 @@ const Home = () => {
                 value={editBody}
                 onChange={(e) => setEditBody(e.target.value)}
               />
-              <button onClick={() => handleSaveEdit(post.id)} style={{backgroundColor: "navy", color: "whitesmoke"}}>Save</button>
-              <button onClick={() => setEditPostId(null)} style={{backgroundColor: "darkred", color: "whitesmoke"}}>Cancel</button>
+              <button
+                onClick={() => handleSaveEdit(post.id)}
+                style={{ backgroundColor: "navy", color: "whitesmoke" }}
+              >
+                Save
+              </button>
+              <button
+                onClick={() => setEditPostId(null)}
+                style={{ backgroundColor: "darkred", color: "whitesmoke" }}
+              >
+                Cancel
+              </button>
             </>
           ) : (
             <>
               <h3 className="postTitle">{post.title}</h3>
               <p className="postBody">{post.body}</p>
               <button
-                style={{backgroundColor: "#504646ff", color: "whitesmoke"}}
+                style={{ backgroundColor: "#504646ff", color: "whitesmoke" }}
                 onClick={() => startEditing(post)}
               >
                 Edit
@@ -174,7 +202,9 @@ const Home = () => {
           )}
         </div>
       ))}
-      <footer><p>&copy; {new Date().getFullYear()} PostsMan. All rights reserved.</p></footer>
+      <footer>
+        <p>&copy; {new Date().getFullYear()} PostsMan. All rights reserved.</p>
+      </footer>
     </div>
   );
 };
