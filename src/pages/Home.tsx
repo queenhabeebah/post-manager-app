@@ -153,7 +153,7 @@ const Home = () => {
             </>
           ) : (
             <>
-              <h2 className="postTitle">{post.title}</h2>
+              <h3 className="postTitle">{post.title}</h3>
               <p className="postBody">{post.body}</p>
               <button
                 style={{backgroundColor: "#504646ff", color: "whitesmoke"}}
