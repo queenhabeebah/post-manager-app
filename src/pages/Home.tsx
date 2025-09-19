@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
-import { createPost, fetchPosts, updatePost } from "../services/api";
+import {
+  createPost,
+  deletePost,
+  fetchPosts,
+  updatePost,
+} from "../services/api";
 import type { NewPost, Post } from "../types/Post";
 
 const Home = () => {
@@ -22,14 +27,6 @@ const Home = () => {
     loadPosts();
   }, []);
 
-  // Add newly created post to the UI
-  const handleAddPost = async (newPost: NewPost) => {
-    try {
-      const created = await createPost(newPost);
-      setPosts((prev) => [created, ...prev]); // Add new post to thr top
-    } catch (error) {}
-  };
-
   // Submit created post
   // Add a state for showing/hiding the create form
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -39,10 +36,21 @@ const Home = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     handleAddPost({ userId: 1, title: newPostTitle, body: newPostBody });
-    alert("Post created successfully");
     setNewPostTitle("");
     setNewPostBody("");
+    alert("Post created successfully");
   };
+  
+  // Add newly created post to the UI
+  const handleAddPost = async (newPost: NewPost) => {
+    try {
+      const created = await createPost(newPost);
+      //Add unique id and to not rely on placeholder's fake id
+      created.id = Date.now() 
+      setPosts((prev) => [created, ...prev]); // Add new post to thr top
+    } catch (error) {}
+  };
+
 
   // Edit a post
   const [editPostId, setEditPostId] = useState<number | null>(null);
@@ -71,21 +79,39 @@ const Home = () => {
     }
   };
 
+  // Delete post logic
+  const handleDelete = async (id: number) => {
+    if(!window.confirm('Delete this post?')) return
+    try {
+      await deletePost(id);
+      setPosts((prev)  => prev.filter((post) => post.id !== id))
+      alert(
+        'Post deleted'
+      )
+    } catch (error) {
+      console.error("Failed to delete post");
+    }
+  };
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
+
   return (
     <div className="container">
-
       {/* Add toggle button for show/hide CreateForm */}
-      <button onClick={() => setShowCreateForm((prev) => !prev)}>
+      <button
+        className="toggleButton"
+        onClick={() => setShowCreateForm((prev) => !prev)}
+      >
         {showCreateForm ? "Close Form" : "Create a New Post"}
       </button>
 
+      {/* Error creating post */}
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
-        {/* Conditional Form for creating a new post */}
-{showCreateForm && (
-  <form onSubmit={handleSubmit}>
-        
+      {/* Conditional Form for creating a new post */}
+      {showCreateForm && (
+        <form onSubmit={handleSubmit}>
           <input
             type="text"
             placeholder="Post Title"
@@ -102,13 +128,12 @@ const Home = () => {
           ></textarea>
           <button type="submit">Create Post</button>
         </form>
+      )}
 
-)}
-
-{/* Post list */}
+      {/* Post list */}
+      <h1 className="heading">Top Posts</h1>
       {posts.map((post) => (
         <div key={post.id} className="postCard">
-
           {/* Inline Edit Form for editing a post */}
           {editPostId === post.id ? (
             <>
@@ -116,34 +141,34 @@ const Home = () => {
                 type="text"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                />
+              />
 
               <textarea
                 rows={10}
                 value={editBody}
                 onChange={(e) => setEditBody(e.target.value)}
-                />
-              <button onClick={() => handleSaveEdit(post.id)}>Save</button>
-              <button onClick={() => setEditPostId(null)}>Cancel</button>
+              />
+              <button onClick={() => handleSaveEdit(post.id)} style={{backgroundColor: "navy", color: "whitesmoke"}}>Save</button>
+              <button onClick={() => setEditPostId(null)} style={{backgroundColor: "darkred", color: "whitesmoke"}}>Cancel</button>
             </>
           ) : (
             <>
               <h2 className="postTitle">{post.title}</h2>
               <p className="postBody">{post.body}</p>
-              <button onClick={() => startEditing(post)}>Edit</button>
+              <button
+                style={{backgroundColor: "#504646ff", color: "whitesmoke"}}
+                onClick={() => startEditing(post)}
+              >
+                Edit
+              </button>
+              <button
+                style={{ backgroundColor: "#db0707ff", color: "white" }}
+                onClick={() => handleDelete(post.id)}
+              >
+                Delete
+              </button>
             </>
           )}
-        </div>
-      ))}
-      
-
-      <h1 className="heading">Top Posts</h1>
-
-      {/* Iterate over the posts array and display just title and body */}
-      {posts.map((post) => (
-        <div key={post.id} className="postCard">
-          <h2 className="postTitle">{post.title}</h2>
-          <p className="postBody">{post.body}</p>
         </div>
       ))}
     </div>

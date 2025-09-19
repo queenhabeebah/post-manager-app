@@ -31,6 +31,7 @@ const CreatePost = () => {
   return (
     <div className="container">
       <h2>Create New Post</h2>
+      
       {error && <p style={{color: "red" }}>{error}</p>}
       <form onSubmit={handleSubmit}>
         <input type="text" placeholder="Post Title" onChange={(e) => setTitle(e.target.value)} value={title} required />
