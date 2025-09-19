@@ -174,7 +174,7 @@ const Home = () => {
           )}
         </div>
       ))}
-      <footer><p>&copy; {new Date().getFullYear()} My Blog. All rights reserved.</p></footer>
+      <footer><p>&copy; {new Date().getFullYear()} PostsMan. All rights reserved.</p></footer>
     </div>
   );
 };
