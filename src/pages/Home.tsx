@@ -9,12 +9,26 @@ import type { NewPost, Post } from "../types/Post";
 
 const Home = () => {
   const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const [showCreateForm, setShowCreateForm] = useState(false);
+
+  const [newPostTitle, setNewPostTitle] = useState("");
+  const [newPostBody, setNewPostBody] = useState("");
+
+  const [editPostId, setEditPostId] = useState<number | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editBody, setEditBody] = useState("");
+
+  
   useEffect(() => {
     // Fetch posts from API when component mounts
     const loadPosts = async () => {
+      setLoading(true)
+      setError("")
       try {
         const data = await fetchPosts();
         setPosts(data);
@@ -27,12 +41,7 @@ const Home = () => {
     loadPosts();
   }, []);
 
-  // Submit created post
-  // Add a state for showing/hiding the create form
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newPostTitle, setNewPostTitle] = useState("");
-  const [newPostBody, setNewPostBody] = useState("");
-
+  // Function to submit created post
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     handleAddPost({ userId: 1, title: newPostTitle, body: newPostBody });
@@ -52,9 +61,6 @@ const Home = () => {
   };
 
   // Edit a post
-  const [editPostId, setEditPostId] = useState<number | null>(null);
-  const [editTitle, setEditTitle] = useState("");
-  const [editBody, setEditBody] = useState("");
 
   const startEditing = (post: Post) => {
     setEditPostId(post.id);
@@ -92,7 +98,6 @@ const Home = () => {
   };
 
   // Add a search state for search functionality
-  const [search, setSearch] = useState("");
 
   // Add filter and change user input to lowercase to search in title and body
   const filteredPosts = posts.filter(
@@ -120,13 +125,13 @@ const Home = () => {
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       {/* Add input to search */}
-      <input className="search"
+      <input
+        className="search"
         type="text"
         placeholder="Search posts..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
-
 
       {/* Conditional Form for creating a new post */}
       {showCreateForm && (
@@ -137,14 +142,14 @@ const Home = () => {
             onChange={(e) => setNewPostTitle(e.target.value)}
             value={newPostTitle}
             required
-            />
+          />
           <textarea
             placeholder="Post Content"
             value={newPostBody}
             rows={10}
             onChange={(e) => setNewPostBody(e.target.value)}
             required
-            ></textarea>
+          ></textarea>
           <button type="submit">Create Post</button>
         </form>
       )}
